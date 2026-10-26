@@ -15,12 +15,28 @@ Parameters:
 
   GitHubOrg:
     Type: String
-    Description: GitHub organisation or username (e.g. myorg)
+    Description: GitHub organisation or username (e.g. yonatanbeyn)
+
+  GitHubOrgId:
+    Type: String
+    Description: >
+      Numeric GitHub user/org ID. GitHub OIDC sub claims now include IDs
+      (e.g. repo:yonatanbeyn@53386808/...). Find yours at
+      https://api.github.com/users/<your-username>  (id field).
+      yonatanbeyn = 53386808
 
   GitHubRepo:
     Type: String
-    Default: transformer-genai
+    Default: sagemaker-ml-transformer-pipeline
     Description: GitHub repository name
+
+  GitHubRepoId:
+    Type: String
+    Description: >
+      Numeric GitHub repository ID. GitHub OIDC sub claims now include IDs
+      (e.g. repo:.../<repo>@1202471708). Find yours at
+      https://api.github.com/repos/<owner>/<repo>  (id field).
+      sagemaker-ml-transformer-pipeline = 1202471708
 
   GitHubBranch:
     Type: String
@@ -165,12 +181,11 @@ Resources:
               StringEquals:
                 "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
               StringLike:
-                # Wildcard covers all branches and environments in this repo.
-                # GitHub OIDC tokens use the stored repo case, which can differ
-                # from what the user types — the wildcard avoids case-sensitivity
-                # issues on rename.
+                # GitHub OIDC sub includes numeric IDs:
+                # repo:<org>@<orgId>/<repo>@<repoId>:<ref>
+                # Using IDs is rename-proof — they never change.
                 "token.actions.githubusercontent.com:sub":
-                  - !Sub "repo:${GitHubOrg}/${GitHubRepo}:*"
+                  - !Sub "repo:${GitHubOrg}@${GitHubOrgId}/${GitHubRepo}@${GitHubRepoId}:*"
       Policies:
         - PolicyName: SageMakerPipelineAccess
           PolicyDocument:
