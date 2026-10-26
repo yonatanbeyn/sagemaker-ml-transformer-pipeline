@@ -165,10 +165,10 @@ Resources:
               StringEquals:
                 "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
               StringLike:
-                # Wildcard covers all branches and environments in this repo.
-                # GitHub OIDC tokens use the stored repo case, which can differ
-                # from what the user types — the wildcard avoids case-sensitivity
-                # issues on rename.
+                # GitHub OIDC lowercases org/repo in the sub claim.
+                # Pass GitHubRepo in lowercase (e.g. sagemakermlpipeline) —
+                # CloudFormation has no built-in lowercase function.
+                # The wildcard covers all branches and environments.
                 "token.actions.githubusercontent.com:sub":
                   - !Sub "repo:${GitHubOrg}/${GitHubRepo}:*"
       Policies:
