@@ -165,10 +165,12 @@ Resources:
               StringEquals:
                 "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
               StringLike:
-                # Allow the specific repo on the main branch OR any environment
+                # Wildcard covers all branches and environments in this repo.
+                # GitHub OIDC tokens use the stored repo case, which can differ
+                # from what the user types — the wildcard avoids case-sensitivity
+                # issues on rename.
                 "token.actions.githubusercontent.com:sub":
-                  - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/${GitHubBranch}"
-                  - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:*"
+                  - !Sub "repo:${GitHubOrg}/${GitHubRepo}:*"
       Policies:
         - PolicyName: SageMakerPipelineAccess
           PolicyDocument:
