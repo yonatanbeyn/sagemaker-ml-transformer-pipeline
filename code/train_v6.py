@@ -543,13 +543,16 @@ for fname in ["inference_v6.py"]:
         print(f"  Bundled {fname} → code/{fname}")
 
 with open(os.path.join(code_dir, "requirements.txt"), "w") as f:
-    # No unsloth here — it would upgrade torch and break TorchServe's NCCL linkage.
-    # The saved LoRA adapter is a standard PEFT checkpoint; plain HF libs are enough.
+    # Pin torch to the DLC's own version (2.3.0). Without this pin, transitive
+    # dependencies of bitsandbytes/peft/accelerate can upgrade torch to 2.4+,
+    # which requires ncclCommResume — a symbol absent in this container's
+    # system NCCL, causing an ImportError at every worker startup.
     f.write(
-        "transformers>=4.40.0\n"
-        "peft>=0.10.0\n"
-        "accelerate>=0.29.0\n"
-        "bitsandbytes>=0.43.0\n"
+        "torch==2.3.0\n"
+        "transformers>=4.40.0,<4.50.0\n"
+        "peft>=0.10.0,<0.15.0\n"
+        "accelerate>=0.29.0,<0.35.0\n"
+        "bitsandbytes>=0.43.0,<0.44.0\n"
     )
 print("  Wrote serving requirements.txt")
 print("\n  Done.")
